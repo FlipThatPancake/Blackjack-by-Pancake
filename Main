@@ -1,7 +1,18 @@
-from art import logo
 import random
 
 # -----------------VARIABLES---------------- #
+
+# Display logo banner at the launch of the game
+logo = '''
+ _     _            _    _            _    
+| |   | |          | |  (_)          | |   
+| |__ | | __ _  ___| | ___  __ _  ___| | __
+| '_ \| |/ _` |/ __| |/ / |/ _` |/ __| |/ /
+| |_) | | (_| | (__|   <| | (_| | (__|   < 
+|_.__/|_|\__,_|\___|_|\_\ |\__,_|\___|_|\_\
+                       _/ |                
+                       |__/                 
+'''
 
 # establish the deck of cards in Blackjack (can be modified in terms of number of items)
 cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
