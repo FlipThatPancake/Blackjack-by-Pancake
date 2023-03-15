@@ -1,0 +1,142 @@
+from art import logo
+import random
+
+# -----------------VARIABLES---------------- #
+
+# establish the deck of cards in Blackjack (can be modified in terms of number of items)
+cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+
+# dictionary containing each player's profile and current score; can add more or remove players
+allPlayers = {
+    "Player": {"name": "Player",
+         "score": 0,
+         "cards": []
+         },
+    "Dealer": {"name": "Dealer",
+         "score": 0,
+         "cards": []
+         },
+    "NPC 1": {"name": "NPC Player 1", 
+          "score": 0, 
+          "cards": []
+         }, 
+    "NPC 2": {"name": "NPC Player 2", 
+          "score": 0,
+          "cards": []
+         }
+}
+
+# -----------------FUNCTIONS-------------------- #
+
+# Display each players hand and their score; hide dealer's and other players hand besides their first card until the end of the game
+def scoreBoard(fogOfWar):
+    for index, player in enumerate(allPlayers.keys()):
+        playerName = allPlayers[player]['name']
+        npcFirstCard = allPlayers[player]['cards'][0]
+        playerCards = allPlayers[player]['cards']
+        playerCards = ', '.join(map(str, playerCards))
+        playerScore = allPlayers[player]['score']
+        if index == 0:
+            print(f"{playerName}\'s hand: {playerCards}, score: {playerScore}")
+        else:
+            if fogOfWar == "ON":
+                print(f"{playerName}\'s first card: {npcFirstCard}, score: {playerScore}")
+            elif fogOfWar == "OFF":
+                print(f"{playerName}\'s hand: {playerCards}, score: {playerScore}")
+
+# Display the winner/winners with the highest score up to 21
+def findWinners():
+    highest_score = max(filter(lambda x: x['score'] <= 21, allPlayers.values()), key=lambda x: x['score'])
+    winners = list(filter(lambda x: x['score'] == highest_score['score'], allPlayers.values()))
+    winners_names = [i['name'] for i in winners]
+    winners_scores = [i['score'] for i in winners]
+    if len(winners_names) == 1:
+        return f"The winner is {winners_names[0]} with the score of {winners_scores[0]}."
+    elif len(winners_names) >= 2:
+        names = ", ".join(winners_names)
+        return f"The winners are {names}."
+
+# Determine if the NPCs should take another card or pass; calculates the risk based on the cards in the deck and a doze of randomness
+def decision(score):
+    remaining = min(21 - score, 10)
+    possible_draws = [c for c in cards if c <= remaining]
+    chances = 0
+    for card in possible_draws:
+        chances += 100 * (cards.count(card) / len(cards))
+    chances = min(chances, 100)
+    ran_factor = random.randint(0, 99)
+    if ran_factor < chances:
+        return True
+    else:
+        return False
+
+# Deal one extra card to a human player or NPC player; input parameter with player's name
+def dealCards(who):
+    if who == "Player":
+        allPlayers["Player"]["cards"] += [random.choice(cards)]
+        allPlayers["Player"]["score"] = sum(allPlayers["Player"]["cards"])
+    else:
+        allPlayers[who]['cards'] += [random.choice(cards)]
+        allPlayers[who]['score'] = sum(allPlayers[who]['cards'])
+        
+    #
+# ----------------GAME-RUNNING------------------ #
+
+# Display a "Blackjack" logo
+while True:
+    print(f"{logo}\n\n")
+
+# Ask a player if they want to play a game of blackjack
+    startGame = input("Do you want to play a game of Blackjack? Type 'y' or 'n':" )
+
+# Quit program if NO
+    if startGame == "n":
+        print("Ok, bye.")
+        break
+
+# Deal one card to the player (arbitrary) and computer player(s)
+    elif startGame == "y":
+        None
+
+        for player in allPlayers:
+            dealCards(who=player)
+            
+# Continue dealing cards until any of the players' score reaches or exceeds 21 and display everyone's final score and the winning players
+        while True:
+            if any(player for player in allPlayers.values() if player["score"] >= 21):
+                scoreBoard(fogOfWar='OFF')
+                print(findWinners())
+                break
+
+# Otherwise, display the score board
+            else:
+                print("\n")
+                scoreBoard(fogOfWar="ON")
+                print("\n")
+# Establish showdown counter; this is to prevent a situation where none of the players want to draw a new card
+                showdown = 0
+# Dealing out cards...
+                for i, player in enumerate(allPlayers.keys()):
+# Ask human player if they want to draw a card
+                    if i == 0:
+                        drawAnotherCard = input("Type 'y' to get another card, type 'n' to pass: ")
+# Deal them a card if they want
+                        if drawAnotherCard == "y":
+                            dealCards(who=player)
+# Add to showdown counter
+                        else:
+                            showdown += 1
+# Determine if each NPC player should draw another card and deal them a card
+                    else:
+                        npcScore = allPlayers[player]["score"]
+                        drawAnotherCardForNPC = decision(score=npcScore)
+                        if drawAnotherCardForNPC:
+                            dealCards(who=player)
+                        else:
+# If not, add to showdown counter
+                            showdown += 1
+# If nobody takes cards, trigger showdown stage where the player with the highest score wins
+                if showdown == len(allPlayers):
+                    scoreBoard(fogOfWar='OFF')
+                    print(findWinners())
+                    break
